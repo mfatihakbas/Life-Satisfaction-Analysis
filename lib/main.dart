@@ -11,9 +11,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  List<dynamic> data = [];
+  List<dynamic> data = []; // Api verileri
   bool tekYilGoster = false;
-  int? selectedYear;
+  int? selectedYear; // nullable int (Primary Key)
   List<int> years = List<int>.generate(21, (index) => 2003 + index);
   int baslangicYili = 2003;
   int bitisYili = 2023;
@@ -21,11 +21,11 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    fetchData();
+    fetchData(); // Veri çekiliyor
   }
 
   Future<void> fetchData() async {
-    final response = await http.get(Uri.parse('http://10.0.2.2:5000/api/mutluluk_verisi'));
+    final response = await http.get(Uri.parse('http://10.0.2.2:5000/api/mutluluk_verisi')); //GET isteği
 
     if (response.statusCode == 200) {
       setState(() {
@@ -36,7 +36,7 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  List<ChartData> getChartData() {
+  List<ChartData> getChartData() { // Grafik
     List<ChartData> chartData = [];
     for (var entry in data) {
       int yil = entry['yil'];

@@ -4,15 +4,15 @@ from flask_cors import CORS
 import os
 
 app = Flask(__name__)
-CORS(app)  # Flutter ile çalışmak için CORS ayarı
+CORS(app) #local host çalışma
 
-# PostgreSQL veritabanı bağlantı ayarları
+# Database conn
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:1234@localhost:5432/mutluluk_duzeyi'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# Veritabanı modeli
+
 class MutlulukVerisi(db.Model):
     __tablename__ = 'mutluluk_verisi'
     yil = db.Column(db.Integer, primary_key=True)
@@ -22,7 +22,7 @@ class MutlulukVerisi(db.Model):
     mutsuz = db.Column(db.Float)
     cok_mutsuz = db.Column(db.Float)
 
-# Yıllara göre mutluluk verilerini çekme API'si
+# Api conn
 @app.route('/api/mutluluk_verisi', methods=['GET'])
 def get_mutluluk_verisi():
     veriler = MutlulukVerisi.query.all()
@@ -39,5 +39,5 @@ def get_mutluluk_verisi():
     ]
     return jsonify(sonuc)
 
-if __name__ == '__main__':
+if __name__ == '__main__': #Flask run
     app.run(debug=True)
