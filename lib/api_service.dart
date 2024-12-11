@@ -25,4 +25,14 @@ class ApiService {
       throw Exception('Failed to load Güvenlik Verisi');
     }
   }
+  static Future<List<dynamic>> getKazancData() async {
+    final response = await http.get(Uri.parse('http://10.0.2.2:5000/api/kazanctan_memnuniyet'));
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load Kazanctan Memnuniyet data');
+    }
+  }
+
+
 }

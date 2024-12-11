@@ -16,8 +16,12 @@ class _ChartScreenState extends State<ChartScreen> {
   int baslangicYili = 2003;
   int bitisYili = 2023;
 
-  String selectedDataset = 'Mutluluk Verisi'; // Başlangıçta seçili olan veri seti
-  final List<String> datasets = ['Mutluluk Verisi', 'Güvenlik Verisi']; // Veri setleri
+  String selectedDataset = 'Mutluluk Verisi';
+  final List<String> datasets = [
+    'Mutluluk Verisi',
+    'Güvenlik Verisi',
+    'Kazançtan Memnuniyet'
+  ];
 
   @override
   void initState() {
@@ -30,8 +34,10 @@ class _ChartScreenState extends State<ChartScreen> {
       List<dynamic> fetchedData;
       if (selectedDataset == 'Mutluluk Verisi') {
         fetchedData = await ApiService.getMutlulukData();
-      } else {
+      } else if (selectedDataset == 'Güvenlik Verisi') {
         fetchedData = await ApiService.getGuvenlikData();
+      } else {
+        fetchedData = await ApiService.getKazancData();
       }
       setState(() {
         data = fetchedData;
@@ -49,21 +55,31 @@ class _ChartScreenState extends State<ChartScreen> {
           (!tekYilGoster && yil >= baslangicYili && yil <= bitisYili)) {
         if (selectedDataset == 'Mutluluk Verisi') {
           chartData.add(ChartData(
-            yil.toString(),
-            entry['cok_mutlu'],
-            entry['mutlu'],
-            entry['orta'],
-            entry['mutsuz'],
-            entry['cok_mutsuz'],
+            year: yil.toString(),
+            cokMutlu: entry['cok_mutlu'],
+            mutlu: entry['mutlu'],
+            orta: entry['orta'],
+            mutsuz: entry['mutsuz'],
+            cokMutsuz: entry['cok_mutsuz'],
           ));
-        } else {
+        } else if (selectedDataset == 'Güvenlik Verisi') {
           chartData.add(ChartData(
-            yil.toString(),
-            entry['cok_guvenli'],
-            entry['guvenli'],
-            entry['orta'],
-            entry['guvensiz'],
-            entry['cok_guvensiz'],
+            year: yil.toString(),
+            cokGuvenli: entry['cok_guvenli'],
+            guvenli: entry['guvenli'],
+            orta: entry['orta'],
+            guvensiz: entry['guvensiz'],
+            cokGuvensiz: entry['cok_guvensiz'],
+          ));
+        } else if (selectedDataset == 'Kazançtan Memnuniyet') {
+          chartData.add(ChartData(
+            year: yil.toString(),
+            cokMemnun: entry['cok_memnun'],
+            memnun: entry['memnun'],
+            orta: entry['orta'],
+            memnunDegil: entry['memnun_degil'],
+            hicMemnunDegil: entry['hic_memnun_degil'],
+            kazanciYok: entry['kazanci_yok'], // Kazancı Yok sütunu eklendi
           ));
         }
       }
@@ -75,7 +91,7 @@ class _ChartScreenState extends State<ChartScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Veri Grafikleri'),
+        title: Text(selectedDataset), // Dinamik başlık
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -87,63 +103,145 @@ class _ChartScreenState extends State<ChartScreen> {
                 const Text('Veri Seti:', style: TextStyle(fontSize: 16)),
                 DropdownButton<String>(
                   value: selectedDataset,
-                  onChanged: (value) {
+                  onChanged: (String? newValue) {
                     setState(() {
-                      selectedDataset = value!;
-                      fetchData(); // Yeni veri seti seçildiğinde verileri tekrar çek
+                      selectedDataset = newValue!;
+                      fetchData();
                     });
                   },
-                  items: datasets.map((String dataset) {
+                  items: datasets.map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
-                      value: dataset,
-                      child: Text(dataset),
+                      value: value,
+                      child: Text(value),
                     );
                   }).toList(),
-                ),
+                )
               ],
             ),
             Expanded(
               child: SfCartesianChart(
                 primaryXAxis: CategoryAxis(),
                 title: ChartTitle(text: selectedDataset),
-                legend: Legend(isVisible: true),
+                legend: Legend(isVisible: true,
+                  overflowMode: LegendItemOverflowMode.wrap,),
                 tooltipBehavior: TooltipBehavior(enable: true),
                 series: <ChartSeries>[
-                  ColumnSeries<ChartData, String>(
-                    dataSource: getChartData(),
-                    xValueMapper: (ChartData data, _) => data.year,
-                    yValueMapper: (ChartData data, _) => data.cokMutlu,
-                    name: selectedDataset == 'Mutluluk Verisi' ? 'Çok Mutlu' : 'Çok Güvenli',
-                    color: Colors.blue,
-                  ),
-                  ColumnSeries<ChartData, String>(
-                    dataSource: getChartData(),
-                    xValueMapper: (ChartData data, _) => data.year,
-                    yValueMapper: (ChartData data, _) => data.mutlu,
-                    name: selectedDataset == 'Mutluluk Verisi' ? 'Mutlu' : 'Güvenli',
-                    color: Colors.green,
-                  ),
-                  ColumnSeries<ChartData, String>(
-                    dataSource: getChartData(),
-                    xValueMapper: (ChartData data, _) => data.year,
-                    yValueMapper: (ChartData data, _) => data.orta,
-                    name: 'Orta',
-                    color: Colors.orange,
-                  ),
-                  ColumnSeries<ChartData, String>(
-                    dataSource: getChartData(),
-                    xValueMapper: (ChartData data, _) => data.year,
-                    yValueMapper: (ChartData data, _) => data.mutsuz,
-                    name: selectedDataset == 'Mutluluk Verisi' ? 'Mutsuz' : 'Güvensiz',
-                    color: Colors.red,
-                  ),
-                  ColumnSeries<ChartData, String>(
-                    dataSource: getChartData(),
-                    xValueMapper: (ChartData data, _) => data.year,
-                    yValueMapper: (ChartData data, _) => data.cokMutsuz,
-                    name: selectedDataset == 'Mutluluk Verisi' ? 'Çok Mutsuz' : 'Çok Güvensiz',
-                    color: Colors.purple,
-                  ),
+                  if (selectedDataset == 'Mutluluk Verisi') ...[
+                    ColumnSeries<ChartData, String>(
+                      dataSource: getChartData(),
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.cokMutlu,
+                      name: 'Çok Mutlu',
+                      color: Colors.blue,
+                    ),
+                    ColumnSeries<ChartData, String>(
+                      dataSource: getChartData(),
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.mutlu,
+                      name: 'Mutlu',
+                      color: Colors.green,
+                    ),
+                    ColumnSeries<ChartData, String>(
+                      dataSource: getChartData(),
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.orta,
+                      name: 'Orta',
+                      color: Colors.orange,
+                    ),
+                    ColumnSeries<ChartData, String>(
+                      dataSource: getChartData(),
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.mutsuz,
+                      name: 'Mutsuz',
+                      color: Colors.red,
+                    ),
+                    ColumnSeries<ChartData, String>(
+                      dataSource: getChartData(),
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.cokMutsuz,
+                      name: 'Çok Mutsuz',
+                      color: Colors.purple,
+                    ),
+                  ] else if (selectedDataset == 'Güvenlik Verisi') ...[
+                    ColumnSeries<ChartData, String>(
+                      dataSource: getChartData(),
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.cokGuvenli,
+                      name: 'Çok Güvenli',
+                      color: Colors.blue,
+                    ),
+                    ColumnSeries<ChartData, String>(
+                      dataSource: getChartData(),
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.guvenli,
+                      name: 'Güvenli',
+                      color: Colors.green,
+                    ),
+                    ColumnSeries<ChartData, String>(
+                      dataSource: getChartData(),
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.orta,
+                      name: 'Orta',
+                      color: Colors.orange,
+                    ),
+                    ColumnSeries<ChartData, String>(
+                      dataSource: getChartData(),
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.guvensiz,
+                      name: 'Güvensiz',
+                      color: Colors.red,
+                    ),
+                    ColumnSeries<ChartData, String>(
+                      dataSource: getChartData(),
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.cokGuvensiz,
+                      name: 'Çok Güvensiz',
+                      color: Colors.purple,
+                    ),
+                  ] else if (selectedDataset == 'Kazançtan Memnuniyet') ...[
+                    ColumnSeries<ChartData, String>(
+                      dataSource: getChartData(),
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.cokMemnun,
+                      name: 'Çok Memnun',
+                      color: Colors.blue,
+                    ),
+                    ColumnSeries<ChartData, String>(
+                      dataSource: getChartData(),
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.memnun,
+                      name: 'Memnun',
+                      color: Colors.green,
+                    ),
+                    ColumnSeries<ChartData, String>(
+                      dataSource: getChartData(),
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.orta,
+                      name: 'Orta',
+                      color: Colors.orange,
+                    ),
+                    ColumnSeries<ChartData, String>(
+                      dataSource: getChartData(),
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.memnunDegil,
+                      name: 'Memnun Değil',
+                      color: Colors.red,
+                    ),
+                    ColumnSeries<ChartData, String>(
+                      dataSource: getChartData(),
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.hicMemnunDegil,
+                      name: 'Hiç Memnun Değil',
+                      color: Colors.purple,
+                    ),
+                    ColumnSeries<ChartData, String>(
+                      dataSource: getChartData(),
+                      xValueMapper: (ChartData data, _) => data.year,
+                      yValueMapper: (ChartData data, _) => data.kazanciYok,
+                      name: 'Kazancı Yok',
+                      color: Colors.grey,
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # local host için çalışma izni
+CORS(app)  # Local host için CORS izni
 
 # Database bağlantısı
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:1234@localhost:5432/mutluluk_duzeyi'
@@ -31,39 +31,41 @@ class YasanilanCevredeGuvendeHissetme(db.Model):
     guvensiz = db.Column(db.Float)
     cok_guvensiz = db.Column(db.Float)
 
-# Mutluluk verisi API endpoint
+# Kazançtan Memnuniyet tablosu modeli
+class KazanctanMemnuniyet(db.Model):
+    __tablename__ = 'isten_elde_edilen_kazanctan_duyulan_memnuniyet'
+    yil = db.Column(db.Integer, primary_key=True)
+    cok_memnun = db.Column(db.Float)
+    memnun = db.Column(db.Float)
+    orta = db.Column(db.Float)
+    memnun_degil = db.Column(db.Float)
+    hic_memnun_degil = db.Column(db.Float)
+    kazanci_yok = db.Column(db.Float)
+
+# Ortak fonksiyon: Tablo verilerini dönüştürmek için
+def serialize_data(query_results, columns):
+    return [
+        {column: getattr(row, column) for column in columns}
+        for row in query_results
+    ]
+
+# API endpoint: Mutluluk verisi
 @app.route('/api/mutluluk_verisi', methods=['GET'])
 def get_mutluluk_verisi():
     veriler = MutlulukVerisi.query.all()
-    sonuc = [
-        {
-            'yil': veri.yil,
-            'cok_mutlu': veri.cok_mutlu,
-            'mutlu': veri.mutlu,
-            'orta': veri.orta,
-            'mutsuz': veri.mutsuz,
-            'cok_mutsuz': veri.cok_mutsuz
-        }
-        for veri in veriler
-    ]
-    return jsonify(sonuc)
+    return jsonify(serialize_data(veriler, ['yil', 'cok_mutlu', 'mutlu', 'orta', 'mutsuz', 'cok_mutsuz']))
 
-# Güvenlik verisi API endpoint
+# API endpoint: Güvenlik verisi
 @app.route('/api/yasanilan_cevrede_guvende_hissetme', methods=['GET'])
 def get_yasanilan_cevrede_guvende_hissetme():
     veriler = YasanilanCevredeGuvendeHissetme.query.all()
-    sonuc = [
-        {
-            'yil': veri.yil,
-            'cok_guvenli': veri.cok_guvenli,
-            'guvenli': veri.guvenli,
-            'orta': veri.orta,
-            'guvensiz': veri.guvensiz,
-            'cok_guvensiz': veri.cok_guvensiz
-        }
-        for veri in veriler
-    ]
-    return jsonify(sonuc)
+    return jsonify(serialize_data(veriler, ['yil', 'cok_guvenli', 'guvenli', 'orta', 'guvensiz', 'cok_guvensiz']))
+
+# API endpoint: Kazançtan Memnuniyet
+@app.route('/api/kazanctan_memnuniyet', methods=['GET'])
+def get_kazanctan_memnuniyet():
+    veriler = KazanctanMemnuniyet.query.all()
+    return jsonify(serialize_data(veriler, ['yil', 'cok_memnun', 'memnun', 'orta', 'memnun_degil', 'hic_memnun_degil', 'kazanci_yok']))
 
 # Dinamik tablo seçimi için API endpoint
 @app.route('/api/veri', methods=['GET'])
@@ -73,6 +75,8 @@ def get_data():
         return get_mutluluk_verisi()
     elif table == 'yasanilan_cevrede_guvende_hissetme':
         return get_yasanilan_cevrede_guvende_hissetme()
+    elif table == 'isten_elde_edilen_kazanctan_memnuniyet':
+        return get_kazanctan_memnuniyet()
     else:
         return jsonify({'error': 'Invalid table name'}), 400
 
