@@ -16,6 +16,9 @@ class _ChartScreenState extends State<ChartScreen> {
   int baslangicYili = 2003;
   int bitisYili = 2023;
 
+  String selectedDataset = 'Mutluluk Verisi'; // Başlangıçta seçili olan veri seti
+  final List<String> datasets = ['Mutluluk Verisi', 'Güvenlik Verisi']; // Veri setleri
+
   @override
   void initState() {
     super.initState();
@@ -24,7 +27,12 @@ class _ChartScreenState extends State<ChartScreen> {
 
   Future<void> fetchData() async {
     try {
-      List<dynamic> fetchedData = await ApiService.getData();
+      List<dynamic> fetchedData;
+      if (selectedDataset == 'Mutluluk Verisi') {
+        fetchedData = await ApiService.getMutlulukData();
+      } else {
+        fetchedData = await ApiService.getGuvenlikData();
+      }
       setState(() {
         data = fetchedData;
       });
@@ -39,14 +47,25 @@ class _ChartScreenState extends State<ChartScreen> {
       int yil = entry['yil'];
       if ((tekYilGoster && yil == selectedYear) ||
           (!tekYilGoster && yil >= baslangicYili && yil <= bitisYili)) {
-        chartData.add(ChartData(
-          yil.toString(),
-          entry['cok_mutlu'],
-          entry['mutlu'],
-          entry['orta'],
-          entry['mutsuz'],
-          entry['cok_mutsuz'],
-        ));
+        if (selectedDataset == 'Mutluluk Verisi') {
+          chartData.add(ChartData(
+            yil.toString(),
+            entry['cok_mutlu'],
+            entry['mutlu'],
+            entry['orta'],
+            entry['mutsuz'],
+            entry['cok_mutsuz'],
+          ));
+        } else {
+          chartData.add(ChartData(
+            yil.toString(),
+            entry['cok_guvenli'],
+            entry['guvenli'],
+            entry['orta'],
+            entry['guvensiz'],
+            entry['cok_guvensiz'],
+          ));
+        }
       }
     }
     return chartData;
@@ -56,16 +75,37 @@ class _ChartScreenState extends State<ChartScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mutluluk Verisi Grafiği'),
+        title: const Text('Veri Grafikleri'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Veri Seti:', style: TextStyle(fontSize: 16)),
+                DropdownButton<String>(
+                  value: selectedDataset,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedDataset = value!;
+                      fetchData(); // Yeni veri seti seçildiğinde verileri tekrar çek
+                    });
+                  },
+                  items: datasets.map((String dataset) {
+                    return DropdownMenuItem<String>(
+                      value: dataset,
+                      child: Text(dataset),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
             Expanded(
               child: SfCartesianChart(
                 primaryXAxis: CategoryAxis(),
-                title: ChartTitle(text: 'Genel Mutluluk Düzeyi'),
+                title: ChartTitle(text: selectedDataset),
                 legend: Legend(isVisible: true),
                 tooltipBehavior: TooltipBehavior(enable: true),
                 series: <ChartSeries>[
@@ -73,14 +113,14 @@ class _ChartScreenState extends State<ChartScreen> {
                     dataSource: getChartData(),
                     xValueMapper: (ChartData data, _) => data.year,
                     yValueMapper: (ChartData data, _) => data.cokMutlu,
-                    name: 'Çok Mutlu',
+                    name: selectedDataset == 'Mutluluk Verisi' ? 'Çok Mutlu' : 'Çok Güvenli',
                     color: Colors.blue,
                   ),
                   ColumnSeries<ChartData, String>(
                     dataSource: getChartData(),
                     xValueMapper: (ChartData data, _) => data.year,
                     yValueMapper: (ChartData data, _) => data.mutlu,
-                    name: 'Mutlu',
+                    name: selectedDataset == 'Mutluluk Verisi' ? 'Mutlu' : 'Güvenli',
                     color: Colors.green,
                   ),
                   ColumnSeries<ChartData, String>(
@@ -94,14 +134,14 @@ class _ChartScreenState extends State<ChartScreen> {
                     dataSource: getChartData(),
                     xValueMapper: (ChartData data, _) => data.year,
                     yValueMapper: (ChartData data, _) => data.mutsuz,
-                    name: 'Mutsuz',
+                    name: selectedDataset == 'Mutluluk Verisi' ? 'Mutsuz' : 'Güvensiz',
                     color: Colors.red,
                   ),
                   ColumnSeries<ChartData, String>(
                     dataSource: getChartData(),
                     xValueMapper: (ChartData data, _) => data.year,
                     yValueMapper: (ChartData data, _) => data.cokMutsuz,
-                    name: 'Çok Mutsuz',
+                    name: selectedDataset == 'Mutluluk Verisi' ? 'Çok Mutsuz' : 'Çok Güvensiz',
                     color: Colors.purple,
                   ),
                 ],
