@@ -79,7 +79,7 @@ class _ChartScreenState extends State<ChartScreen> {
             orta: entry['orta'],
             memnunDegil: entry['memnun_degil'],
             hicMemnunDegil: entry['hic_memnun_degil'],
-            kazanciYok: entry['kazanci_yok'], // Kazancı Yok sütunu eklendi
+            kazanciYok: entry['kazanci_yok'],
           ));
         }
       }
