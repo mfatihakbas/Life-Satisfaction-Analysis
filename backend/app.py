@@ -39,6 +39,17 @@ class KazanctanMemnuniyet(db.Model):
     hic_memnun_degil = db.Column(db.Float)
     kazanci_yok = db.Column(db.Float)
 
+class RefahSeviyesi(db.Model):
+    __tablename__ = 'refah_seviyesi'
+    yil = db.Column(db.Integer, primary_key=True)
+    en_dusuk = db.Column(db.Float)
+    dusuk = db.Column(db.Float)
+    orta = db.Column(db.Float)
+    yuksek = db.Column(db.Float)
+    en_yuksek = db.Column(db.Float)
+
+
+
 def serialize_data(query_results, columns):
     return [
         {column: getattr(row, column) for column in columns}
@@ -60,6 +71,11 @@ def get_kazanctan_memnuniyet():
     veriler = KazanctanMemnuniyet.query.all()
     return jsonify(serialize_data(veriler, ['yil', 'cok_memnun', 'memnun', 'orta', 'memnun_degil', 'hic_memnun_degil', 'kazanci_yok']))
 
+@app.route('/api/refah_seviyesi', methods=['GET'])
+def get_refah_seviyesi():
+    veriler = RefahSeviyesi.query.all()
+    return jsonify(serialize_data(veriler, ['yil', 'en_dusuk', 'dusuk', 'orta', 'yuksek', 'en_yuksek']))
+
 @app.route('/api/veri', methods=['GET'])
 def get_data():
     table = request.args.get('table') 
@@ -69,6 +85,8 @@ def get_data():
         return get_yasanilan_cevrede_guvende_hissetme()
     elif table == 'isten_elde_edilen_kazanctan_memnuniyet':
         return get_kazanctan_memnuniyet()
+    elif table == 'refah_seviyesi':
+        return get_refah_seviyesi
     else:
         return jsonify({'error': 'Invalid table name'}), 400
 
