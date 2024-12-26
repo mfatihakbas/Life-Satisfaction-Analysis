@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const CustomAppBar({super.key});
+
   @override
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.deepPurple,
-      title: Row(
+      title: const Row(
         children: [
-          const Icon(
+          Icon(
             Icons.square, // Kare ikon
             color: Colors.white,
             size: 45, // İkon boyutu artırıldı (varsayılan boyut 24)
           ),
-          const SizedBox(width: 8), // İkon ile yazı arasında boşluk
-          const Text(
+          SizedBox(width: 8), // İkon ile yazı arasında boşluk
+          Text(
             "Hoş Geldiniz!",
             style: TextStyle(
               fontWeight: FontWeight.bold,

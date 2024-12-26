@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
-
+import 'package:vtysproje/widgets/api_service.dart';
+import 'package:vtysproje/widgets/bar_chart_widget.dart';
 class FilterSection extends StatefulWidget {
+
+  final GlobalKey<BarChartWidgetState> chartKey;
+
+  const FilterSection({required this.chartKey, Key? key}) : super(key: key);
+
   @override
   _FilterSectionState createState() => _FilterSectionState();
 }
@@ -21,10 +27,27 @@ class _FilterSectionState extends State<FilterSection> {
 
   // Yıl listesi
   final List<String> years = [
-    '2003', '2004', '2005', '2006', '2007',
-    '2008', '2009', '2010', '2011', '2012',
-    '2013', '2014', '2015', '2016', '2017',
-    '2018', '2019', '2020', '2021', '2022', '2023',
+    '2003',
+    '2004',
+    '2005',
+    '2006',
+    '2007',
+    '2008',
+    '2009',
+    '2010',
+    '2011',
+    '2012',
+    '2013',
+    '2014',
+    '2015',
+    '2016',
+    '2017',
+    '2018',
+    '2019',
+    '2020',
+    '2021',
+    '2022',
+    '2023',
   ];
 
   // En az bir checkbox işaretli olmalı
@@ -37,17 +60,35 @@ class _FilterSectionState extends State<FilterSection> {
     }
   }
 
-  // İstatistikleri uygula butonu işlemi
   void applyStatisticsFilters() {
     final selectedFilters = [];
+
     if (isCheckedA) selectedFilters.add("A");
     if (isCheckedB) selectedFilters.add("B");
     if (isCheckedC) selectedFilters.add("C");
-    if (isCheckedD) selectedFilters.add("D");
+    if(isCheckedD) selectedFilters.add("D");
+    if (selectedFilters.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("En az bir seçenek seçilmelidir.")),
+      );
+      return;
+    }
 
-    print("Seçilen istatistik filtreleri: $selectedFilters");
-    // Burada grafiğe seçilen istatistik filtrelerini ekleme işlemi yapılabilir.
+    // Seçilen filtreye göre BarChartWidget'ın veri kaynağını güncelle
+    if (selectedFilters.contains("A")) {
+      widget.chartKey.currentState?.updateFuture(ApiService.getMutlulukData(),"Mutluluk Tablosu");
+    } else if (selectedFilters.contains("B")) {
+      widget.chartKey.currentState?.updateFuture(ApiService.getGuvenlikData(),"Güvenlik Tablosu");
+    } else if (selectedFilters.contains("C")) {
+      widget.chartKey.currentState?.updateFuture(ApiService.getKazancData(),"Kazançtan Memnuniyet");
+    }
+    else if(selectedFilters.contains("D"))
+    {
+      widget.chartKey.currentState?.updateFuture(ApiService.getRefahData(),"Refah Seviyesi");
+    }
   }
+
+
 
   // Yıl filtrelerini uygula butonu işlemi
   void applyYearFilters() {
@@ -61,8 +102,13 @@ class _FilterSectionState extends State<FilterSection> {
       return;
     }
 
-    print("Seçilen yıllar: Başlangıç: $selectedStartYear, Bitiş: $selectedEndYear");
-    // Burada grafiğe seçilen yıllar filtrelerini ekleme işlemi yapılabilir.
+    final startYear = int.parse(selectedStartYear!);
+    final endYear = int.parse(selectedEndYear!);
+
+    print("Seçilen yıllar: Başlangıç: $startYear, Bitiş: $endYear");
+
+    // BarChartWidget ile iletişim kur ve yıl filtrelerini uygula
+    widget.chartKey.currentState?.updateYearFilters(startYear, endYear);
   }
 
   @override
@@ -96,7 +142,7 @@ class _FilterSectionState extends State<FilterSection> {
                           });
                         },
                       ),
-                      const Text("A"),
+                      const Text("Mutluluk Tablosu"),
                     ],
                   ),
                   Row(
@@ -110,7 +156,8 @@ class _FilterSectionState extends State<FilterSection> {
                           });
                         },
                       ),
-                      const Text("Ğ"),
+                      const Text("Güvenlik Tablosu",softWrap: true,),
+
                     ],
                   ),
                 ],
@@ -129,7 +176,7 @@ class _FilterSectionState extends State<FilterSection> {
                           });
                         },
                       ),
-                      const Text("C"),
+                      const Text("Kazançtan Memnuniyet"),
                     ],
                   ),
                   Row(
@@ -143,7 +190,7 @@ class _FilterSectionState extends State<FilterSection> {
                           });
                         },
                       ),
-                      const Text("D"),
+                      const Text("Refah Seviyesi"),
                     ],
                   ),
                 ],
@@ -177,11 +224,13 @@ class _FilterSectionState extends State<FilterSection> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Başlangıç Yılı", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text("Başlangıç Yılı",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                   DropdownButton<String>(
                     value: selectedStartYear,
                     items: years
-                        .map((year) => DropdownMenuItem(value: year, child: Text(year)))
+                        .map((year) =>
+                            DropdownMenuItem(value: year, child: Text(year)))
                         .toList(),
                     onChanged: (value) {
                       setState(() {
@@ -194,11 +243,13 @@ class _FilterSectionState extends State<FilterSection> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Bitiş Yılı", style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Text("Bitiş Yılı",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                   DropdownButton<String>(
                     value: selectedEndYear,
                     items: years
-                        .map((year) => DropdownMenuItem(value: year, child: Text(year)))
+                        .map((year) =>
+                            DropdownMenuItem(value: year, child: Text(year)))
                         .toList(),
                     onChanged: (value) {
                       setState(() {

@@ -5,6 +5,8 @@ import '../widgets/filter_section.dart';
 import '../widgets/footer_section.dart';
 
 class DashboardScreen extends StatelessWidget {
+  final GlobalKey<BarChartWidgetState> chartKey = GlobalKey<BarChartWidgetState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -15,9 +17,13 @@ class DashboardScreen extends StatelessWidget {
           children: [
             Container(
               height: 300, // Grafik için sabit bir yükseklik
-              child: BarChartWidget(),
+              child: BarChartWidget(
+                key: chartKey, // GlobalKey atanıyor
+              ),
             ),
-            FilterSection(), // Filtreleme bölümü
+            FilterSection(
+              chartKey: chartKey, // GlobalKey ile bağlantı
+            ),
             FooterSection(), // Footer bölümü
           ],
         ),
@@ -25,4 +31,3 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 }
-
