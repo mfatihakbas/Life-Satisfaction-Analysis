@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:vtysproje/widgets/api_service.dart';
-import 'package:vtysproje/widgets/bar_chart_widget.dart';
+import 'package:LifeSatisfactionAnalysis/widgets/api_service.dart';
+import 'package:LifeSatisfactionAnalysis/widgets/bar_chart_widget.dart';
 class FilterSection extends StatefulWidget {
 
   final GlobalKey<BarChartWidgetState> chartKey;
@@ -14,7 +14,7 @@ class FilterSection extends StatefulWidget {
 class _FilterSectionState extends State<FilterSection> {
   // Seçilen başlangıç ve bitiş yılları
   String? selectedStartYear = '2003';
-  String? selectedEndYear = '2022';
+  String? selectedEndYear = '2023';
   String? selectedRelationYear='2003';
   String? textYear='2003';
   String? relationName='Güven ve Mutluluk';
@@ -27,6 +27,10 @@ class _FilterSectionState extends State<FilterSection> {
   String? selectedCheckbox;
   // Tablolar için checkbox durumları
   bool isChecked(String checkbox) => selectedCheckbox == checkbox;
+
+  String relationMessage="";
+
+
 
   final List<String> relations=[
     'Kazanç Memnuniyet ve Mutluluk',
@@ -423,8 +427,59 @@ class _FilterSectionState extends State<FilterSection> {
           ),
           const Divider(), // Görsel ayrım
           const Text(
-            "İlişki Görüntüle",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            "Güvenlik Refah ve Kazancın Mutluluğa Etkileri",
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("1. Mutluluk → Kazanç: %417.83\n"
+          "2. Güvenlik → Kazanç: %381.51\n"
+          "3. Refah → Kazanç: %272.06\n"
+          "4. Mutluluk → Refah: %157.23\n"
+          "5. Güvenlik → Refah: %143.89\n"
+          "6. Mutluluk → Güvenlik: %112.39\n"
+          "7. Güvenlik → Mutluluk: %97.52\n"
+          "8. Refah → Mutluluk: %72.70\n"
+          "9. Refah → Güvenlik: %72.68\n"
+          "10. Kazanç → Refah: %39.96\n"
+          "11. Kazanç → Güvenlik: %28.90\n"
+          "12. Kazanç → Mutluluk: %27.42\n",
+                      style: TextStyle(fontWeight: FontWeight.w600)),
+                    ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/relation.jpg',
+                    height: 163,
+                  ),
+                  SizedBox(width: 8),
+                ],
+              ),
+            ],
+          ),
+          const Divider(), // Görsel ayrım
+          const Text(
+            "Araştırmanın Detayları:",
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+
+          const Text(
+               "Bu çalışma, 25-34 yaş arası bireylerin yaşam memnuniyeti üzerine yapılan bir analizdir.\n"
+                   "Veriler, https://biruni.tuik.gov.tr/medas/?locale=tr sitesinden alınmıştır.\n"
+                  "Analiz; Genel Mutluluk Düzeyi (%), "
+                  "İşten Elde Edilen Kazançtan Duyulan Memnuniyet Düzeyi (%),"
+                  " Yaşanılan Çevrede Bireyin Kendini Güvende Hissetmesi (%) "
+                  "ve Algılanan Refah Düzeyi (%) verileri üzerinde işlemler yapılarak oluşturulmuştur.",
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
         ],

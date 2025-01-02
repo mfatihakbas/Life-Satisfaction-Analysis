@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
-import 'api_service.dart';
+import 'package:LifeSatisfactionAnalysis/widgets/api_service.dart';
 
 class BarChartWidget extends StatefulWidget {
   const BarChartWidget({Key? key}) : super(key: key);
