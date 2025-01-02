@@ -1,4 +1,4 @@
-yil,kazancMemnuniyeti.cok_memnun - mutluluk.cok_mutlu,kazancMemnuniyeti.memnun_degil - mutluluk.mutsuz
+yil,cok_memnun_cok_mutlu,memnun_degil_mutsuz
 2003,21.13,581.31
 2004,15.24,343.87
 2005,18.86,308.51
@@ -11,7 +11,7 @@ yil,kazancMemnuniyeti.cok_memnun - mutluluk.cok_mutlu,kazancMemnuniyeti.memnun_d
 2012,16.41,380.03
 2013,22.69,392.03
 2014,20.28,360.63
-2015,31.0,391.97
+2015,31,391.97
 2016,18.98,302.9
 2017,29.67,335.42
 2018,28.3,356.16

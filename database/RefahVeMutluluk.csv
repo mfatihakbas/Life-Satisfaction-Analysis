@@ -1,4 +1,4 @@
-yil,refahSeviyesi.en_dusuk - mutluluk.mutsuz,refahSeviyesi.yuksek - mutluluk.cok_mutlu
+yil,en_dusuk_mutsuz,yuksek_cok_mutlu
 2004,69.45,55.21
 2005,66.87,57.04
 2006,72.87,60.06
@@ -14,7 +14,7 @@ yil,refahSeviyesi.en_dusuk - mutluluk.mutsuz,refahSeviyesi.yuksek - mutluluk.cok
 2016,58.94,45.89
 2017,56.59,66.54
 2018,53.24,82.13
-2019,47.63,100.0
+2019,47.63,100
 2020,59.29,68.35
 2021,58.41,85.61
 2022,56.93,126.35
