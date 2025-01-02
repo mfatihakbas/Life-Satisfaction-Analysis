@@ -48,7 +48,23 @@ class RefahSeviyesi(db.Model):
     yuksek = db.Column(db.Float)
     en_yuksek = db.Column(db.Float)
 
+class GuvenVeMutluluk(db.Model):
+    __tablename__ = 'guven_ve_mutluluk'
+    yil = db.Column(db.Integer, primary_key=True)
+    cok_guvenli_cok_mutlu = db.Column(db.Float)
+    guvensiz_mutsuz = db.Column(db.Float)
 
+class KazancVeMutluluk(db.Model):
+    __tablename__ = 'kazanc_ve_mutluluk'
+    yil = db.Column(db.Integer, primary_key=True)
+    cok_memnun_cok_mutlu = db.Column(db.Float)
+    memnun_degil_mutsuz = db.Column(db.Float)
+
+class RefahVeMutluluk(db.Model):
+    __tablename__ = 'refah_ve_mutluluk'
+    yil = db.Column(db.Integer, primary_key=True)
+    en_dusuk_mutsuz = db.Column(db.Float)
+    yuksek_cok_mutlu = db.Column(db.Float)
 
 def serialize_data(query_results, columns):
     return [
@@ -76,6 +92,22 @@ def get_refah_seviyesi():
     veriler = RefahSeviyesi.query.all()
     return jsonify(serialize_data(veriler, ['yil', 'en_dusuk', 'dusuk', 'orta', 'yuksek', 'en_yuksek']))
 
+@app.route('/api/guven_ve_mutluluk', methods=['GET'])
+def get_guven_ve_mutluluk():
+    veriler = GuvenVeMutluluk.query.all()
+    return jsonify(serialize_data(veriler, ['yil', 'cok_guvenli_cok_mutlu', 'guvensiz_mutsuz']))
+
+@app.route('/api/kazanc_ve_mutluluk', methods=['GET'])
+def get_kazanc_ve_mutluluk():
+    veriler = KazancVeMutluluk.query.all()
+    return jsonify(serialize_data(veriler, ['yil', 'cok_memnun_cok_mutlu', 'memnun_degil_mutsuz']))
+
+@app.route('/api/refah_ve_mutluluk', methods=['GET'])
+def get_refah_ve_mutluluk():
+    veriler = RefahVeMutluluk.query.all()
+    return jsonify(serialize_data(veriler, ['yil', 'en_dusuk_mutsuz', 'yuksek_cok_mutlu']))
+
+
 @app.route('/api/veri', methods=['GET'])
 def get_data():
     table = request.args.get('table') 
@@ -86,7 +118,13 @@ def get_data():
     elif table == 'isten_elde_edilen_kazanctan_memnuniyet':
         return get_kazanctan_memnuniyet()
     elif table == 'refah_seviyesi':
-        return get_refah_seviyesi
+        return get_refah_seviyesi()
+    elif table == 'guven_ve_mutluluk':
+        return get_guven_ve_mutluluk()
+    elif table == 'kazanc_ve_mutluluk':
+        return get_kazanc_ve_mutluluk()
+    elif table == 'refah_ve_mutluluk':
+        return get_refah_ve_mutluluk()
     else:
         return jsonify({'error': 'Invalid table name'}), 400
 
