@@ -14,7 +14,7 @@ class BarChartWidgetState extends State<BarChartWidget> {
   late List<_ChartData> _chartData;
 
   String _selectedTable = 'Mutluluk Tablosu';
-
+  String tableData='Mutluluk Tablosu';
   @override
   void initState() {
     super.initState();
@@ -119,7 +119,7 @@ class BarChartWidgetState extends State<BarChartWidget> {
         } else {
           return SfCartesianChart(
             primaryXAxis: CategoryAxis(),
-            title: ChartTitle(text: 'Seçilen Tablo Verileri'),
+            title: ChartTitle(text: tableData),
             legend: Legend(isVisible: true),
             tooltipBehavior: TooltipBehavior(enable: true),
             series: _buildChartSeries(),

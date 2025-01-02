@@ -7,14 +7,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.deepPurple,
-      title: const Row(
+      title: Row(
         children: [
-          Icon(
-            Icons.square, // Kare ikon
-            color: Colors.white,
-            size: 45, // İkon boyutu artırıldı (varsayılan boyut 24)
+          Image.asset(
+            'assets/images/logo.jpg',
+            height: 45,
           ),
-          SizedBox(width: 8), // İkon ile yazı arasında boşluk
+          SizedBox(width: 8),
           Text(
             "Hoş Geldiniz!",
             style: TextStyle(

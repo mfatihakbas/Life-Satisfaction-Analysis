@@ -15,15 +15,24 @@ class _FilterSectionState extends State<FilterSection> {
   // Seçilen başlangıç ve bitiş yılları
   String? selectedStartYear = '2003';
   String? selectedEndYear = '2022';
+  String? selectedRelationYear='2003';
+  String? textYear='2003';
+  String? relationName='Güven ve Mutluluk';
+  String? textRelation='Güven ve Mutluluk';
+  String  firstText="";
+  String  secondText="";
 
   // Checkbox kontrolü
   bool showSingleYear = false;
-
+  String? selectedCheckbox;
   // Tablolar için checkbox durumları
-  bool isCheckedA = false;
-  bool isCheckedB = false;
-  bool isCheckedC = false;
-  bool isCheckedD = false;
+  bool isChecked(String checkbox) => selectedCheckbox == checkbox;
+
+  final List<String> relations=[
+    'Kazanç Memnuniyet ve Mutluluk',
+    'Refah Seviyesi ve Mutluluk',
+    'Güven ve Mutluluk'
+  ];
 
   // Yıl listesi
   final List<String> years = [
@@ -50,23 +59,25 @@ class _FilterSectionState extends State<FilterSection> {
     '2023',
   ];
 
-  // En az bir checkbox işaretli olmalı
-  void validateCheckboxes() {
-    final checkboxes = [isCheckedA, isCheckedB, isCheckedC, isCheckedD];
-    if (!checkboxes.contains(true)) {
-      setState(() {
-        isCheckedA = true; // Varsayılan olarak A işaretlenir.
-      });
-    }
+  void toggleCheckbox(String checkbox) {
+    setState(() {
+      if (selectedCheckbox == checkbox) {
+        // Eğer tıklanan zaten seçiliyse seçimi kaldır
+        selectedCheckbox = null;
+      } else {
+        // Tıklanan checkbox'ı seçili yap
+        selectedCheckbox = checkbox;
+      }
+    });
   }
 
   void applyStatisticsFilters() {
     final selectedFilters = [];
 
-    if (isCheckedA) selectedFilters.add("A");
-    if (isCheckedB) selectedFilters.add("B");
-    if (isCheckedC) selectedFilters.add("C");
-    if(isCheckedD) selectedFilters.add("D");
+    if (isChecked("A")) selectedFilters.add("A");
+    if (isChecked("B")) selectedFilters.add("B");
+    if (isChecked("C")) selectedFilters.add("C");
+    if (isChecked("D")) selectedFilters.add("D");
     if (selectedFilters.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("En az bir seçenek seçilmelidir.")),
@@ -77,14 +88,18 @@ class _FilterSectionState extends State<FilterSection> {
     // Seçilen filtreye göre BarChartWidget'ın veri kaynağını güncelle
     if (selectedFilters.contains("A")) {
       widget.chartKey.currentState?.updateFuture(ApiService.getMutlulukData(),"Mutluluk Tablosu");
+      widget.chartKey.currentState?.tableData="Mutluluk Tablosu";
     } else if (selectedFilters.contains("B")) {
       widget.chartKey.currentState?.updateFuture(ApiService.getGuvenlikData(),"Güvenlik Tablosu");
+      widget.chartKey.currentState?.tableData="Güvenlik Tablosu";
     } else if (selectedFilters.contains("C")) {
       widget.chartKey.currentState?.updateFuture(ApiService.getKazancData(),"Kazançtan Memnuniyet");
+      widget.chartKey.currentState?.tableData="Kazançtan Memnuniyet Tablosu";
     }
     else if(selectedFilters.contains("D"))
     {
       widget.chartKey.currentState?.updateFuture(ApiService.getRefahData(),"Refah Seviyesi");
+      widget.chartKey.currentState?.tableData="Refah Seviyesi Tablosu";
     }
   }
 
@@ -111,6 +126,66 @@ class _FilterSectionState extends State<FilterSection> {
     widget.chartKey.currentState?.updateYearFilters(startYear, endYear);
   }
 
+  void applyRelations() async{
+    setState(() {
+      textYear = selectedRelationYear;
+      textRelation=relationName;
+    });
+    final intYear=int.parse(textYear!);
+    final data;
+    final filteredData;
+    switch(relationName){
+      case 'Güven ve Mutluluk':
+        data = await ApiService.getGuvenVeMutlulukData();
+        filteredData = data.firstWhere(
+              (element) => element['yil'] == intYear,
+          orElse: () => null,
+        );
+        if (filteredData != null) {
+          setState(() {
+            firstText = "Çok Güvenli oranı ile Çok mutlu oranı arasında %${filteredData['cok_guvenli_cok_mutlu']} oranında ilişki tespit edilmiştir.";
+            secondText="Aynı yıl, Güvensiz ile Mutsuz oranı arasında %${filteredData['guvensiz_mutsuz']} oranında ilişki tespit edilmiştir.";
+          });
+        } else {
+            firstText = "Seçilen yıl için veri bulunamadı.";
+            secondText = "Seçilen yıl için veri bulunamadı.";
+        }
+        break;
+      case 'Kazanç Memnuniyet ve Mutluluk':
+        final data = await ApiService.getKazancVeMutlulukData();
+        filteredData = data.firstWhere(
+              (element) => element['yil'] == intYear,
+          orElse: () => null,
+        );
+        if (filteredData != null) {
+          setState(() {
+            firstText = "Çok Memnun oranı ile Çok mutlu oranı arasında %${filteredData['cok_memnun_cok_mutlu']} oranında ilişki tespit edilmiştir.";
+            secondText="Aynı yıl, Memnun Değil oranı ile Mutsuz oranı arasında %${filteredData['memnun_degil_mutsuz']} oranında ilişki tespit edilmiştir.";
+          });
+        } else {
+          firstText = "Seçilen yıl için veri bulunamadı.";
+          secondText = "Seçilen yıl için veri bulunamadı.";
+        }
+        break;
+      case 'Refah Seviyesi ve Mutluluk':
+        final data = await ApiService.getRefahVeMutlulukData();
+        filteredData = data.firstWhere(
+              (element) => element['yil'] == intYear,
+          orElse: () => null,
+        );
+        if (filteredData != null) {
+          setState(() {
+            firstText = "Yüksek Refah Seviyesi oranı ile Çok mutlu oranı arasında %${filteredData['yuksek_cok_mutlu']} oranında ilişki tespit edilmiştir.";
+            secondText="Aynı yıl, En düşük Refah Seviyesi oranı ile Mutsuz oranı arasında %${filteredData['en_dusuk_mutsuz']} oranında ilişki tespit edilmiştir.";
+          });
+        } else {
+          firstText = "Seçilen yıl için veri bulunamadı.";
+          secondText = "Seçilen yıl için veri bulunamadı.";
+        }
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -134,12 +209,13 @@ class _FilterSectionState extends State<FilterSection> {
                   Row(
                     children: [
                       Checkbox(
-                        value: isCheckedA,
+                        value: isChecked("A"),
                         onChanged: (value) {
-                          setState(() {
+                          toggleCheckbox("A");
+                          /*setState(() {
                             isCheckedA = value!;
                             validateCheckboxes();
-                          });
+                          });*/
                         },
                       ),
                       const Text("Mutluluk Tablosu"),
@@ -148,12 +224,13 @@ class _FilterSectionState extends State<FilterSection> {
                   Row(
                     children: [
                       Checkbox(
-                        value: isCheckedB,
+                        value: isChecked("B"),
                         onChanged: (value) {
-                          setState(() {
+                          toggleCheckbox("B");
+                          /*setState(() {
                             isCheckedB = value!;
                             validateCheckboxes();
-                          });
+                          });*/
                         },
                       ),
                       const Text("Güvenlik Tablosu",softWrap: true,),
@@ -168,12 +245,13 @@ class _FilterSectionState extends State<FilterSection> {
                   Row(
                     children: [
                       Checkbox(
-                        value: isCheckedC,
+                        value: isChecked("C"),
                         onChanged: (value) {
-                          setState(() {
+                          toggleCheckbox("C");
+                          /*setState(() {
                             isCheckedC = value!;
                             validateCheckboxes();
-                          });
+                          });*/
                         },
                       ),
                       const Text("Kazançtan Memnuniyet"),
@@ -182,12 +260,13 @@ class _FilterSectionState extends State<FilterSection> {
                   Row(
                     children: [
                       Checkbox(
-                        value: isCheckedD,
+                        value: isChecked("D"),
                         onChanged: (value) {
-                          setState(() {
+                          toggleCheckbox("D");
+                          /*setState(() {
                             isCheckedD = value!;
                             validateCheckboxes();
-                          });
+                          });*/
                         },
                       ),
                       const Text("Refah Seviyesi"),
@@ -212,7 +291,7 @@ class _FilterSectionState extends State<FilterSection> {
 
           // Yıllarına filtrele başlığı
           const Text(
-            "Yıllarına Filtrele",
+            "Yılları Filtrele",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
@@ -270,6 +349,84 @@ class _FilterSectionState extends State<FilterSection> {
               child: const Text("Yıl Filtrelerini Uygula"),
             ),
           ),
+          const Divider(), // Görsel ayrım
+          const SizedBox(height: 8),
+
+          const Text(
+            "İlişki Görüntüle",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+
+          // İlişki filtreleme (Başlangıç ve Bitiş Yıllarını Yan Yana)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Yıl",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  DropdownButton<String>(
+                    value: selectedRelationYear,
+                    items: years
+                        .map((year) =>
+                        DropdownMenuItem(value: year, child: Text(year)))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedRelationYear = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("İlişkiler",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  DropdownButton<String>(
+                    value: relationName,
+                    items: relations
+                        .map((relations) =>
+                        DropdownMenuItem(value: relations, child: Text(relations)))
+                        .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        relationName = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "$textYear Yılında $relationName İlişkisi",
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            firstText,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          ),
+          Text(
+            secondText,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          ),
+          Center(
+            child: ElevatedButton(
+              onPressed: applyRelations,
+              child: const Text("İlişki Görüntüle"),
+            ),
+          ),
+          const Divider(), // Görsel ayrım
+          const Text(
+            "İlişki Görüntüle",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
         ],
       ),
     );
